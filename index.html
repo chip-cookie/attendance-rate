@@ -757,8 +757,13 @@
 
             setStatus(dateKey, status) {
                 // 상태 설정
+                console.log(`[setStatus] 날짜: ${dateKey}, 상태: ${status}`);
+
                 if (this.data.hasOwnProperty(dateKey)) {
+                    const oldStatus = this.data[dateKey];
                     this.data[dateKey] = status;
+                    console.log(`[setStatus] 변경: ${oldStatus} -> ${status}`);
+                    console.log(`[setStatus] 전체 데이터:`, this.data);
 
                     // 해당 셀만 업데이트
                     const cell = this.els.calendarGrid.querySelector(`[data-date="${dateKey}"]`);
@@ -776,6 +781,8 @@
                     }
 
                     this.updateUI();
+                } else {
+                    console.error(`[setStatus] 날짜가 data에 없음: ${dateKey}`);
                 }
             }
 
@@ -836,6 +843,9 @@
                 // 통계 계산
                 const totalDays = countWeekdays(this.startDate, this.endDate);
                 const result = calculateAttendanceRate(this.data, totalDays);
+
+                console.log(`[updateUI] 총 수업일수: ${totalDays}`);
+                console.log(`[updateUI] 계산 결과:`, result);
 
                 // 카운트 표시
                 this.els.presentCount.textContent = result.counts.present;
