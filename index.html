@@ -6,18 +6,15 @@
     <title>출석 관리 시스템</title>
     <style>
         /* ========================================
-           1. 기본 스타일 및 변수 정의
+           기본 스타일 및 변수 정의
            ======================================== */
         :root {
-            /* 색상 변수 정의 */
-            --color-present: #10b981;      /* 출석 - 초록색 */
-            --color-absent: #ef4444;       /* 결석 - 빨간색 */
-            --color-late: #f97316;         /* 지각 - 주황색 */
-            --color-early: #eab308;        /* 조퇴 - 노란색 */
-            --color-outing: #a78bfa;       /* 외출 - 연보라색 */
-            --color-sick: #6b7280;         /* 병결 - 회색 */
-
-            /* UI 색상 */
+            --color-present: #10b981;
+            --color-absent: #ef4444;
+            --color-late: #f97316;
+            --color-early: #eab308;
+            --color-outing: #a78bfa;
+            --color-sick: #6b7280;
             --bg-primary: #f8fafc;
             --bg-secondary: #ffffff;
             --text-primary: #1e293b;
@@ -40,9 +37,6 @@
             padding: 20px;
         }
 
-        /* ========================================
-           2. 헤더 및 대시보드 상단 영역
-           ======================================== */
         .dashboard {
             max-width: 1200px;
             margin: 0 auto;
@@ -69,7 +63,6 @@
             color: var(--text-primary);
         }
 
-        /* 기간 설정 영역 */
         .period-settings {
             display: flex;
             align-items: center;
@@ -92,11 +85,6 @@
             cursor: pointer;
         }
 
-        .period-settings input[type="date"]:focus {
-            outline: none;
-            border-color: var(--color-present);
-        }
-
         .period-display {
             margin-left: auto;
             font-size: 14px;
@@ -106,7 +94,6 @@
             border-radius: 8px;
         }
 
-        /* 출석률 표시 영역 */
         .stats-container {
             display: flex;
             gap: 24px;
@@ -130,7 +117,6 @@
             margin-top: 4px;
         }
 
-        /* 목표 출석률 선택기 */
         .target-selector {
             display: flex;
             flex-direction: column;
@@ -151,12 +137,6 @@
             background: var(--bg-secondary);
         }
 
-        .target-selector select:focus {
-            outline: none;
-            border-color: var(--color-present);
-        }
-
-        /* 출석률 상태 표시 (목표 대비) */
         .rate-status {
             font-size: 12px;
             margin-top: 4px;
@@ -179,9 +159,6 @@
             color: var(--color-absent);
         }
 
-        /* ========================================
-           3. 통계 요약 카드
-           ======================================== */
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -215,9 +192,6 @@
         .summary-card.outing .count { color: var(--color-outing); }
         .summary-card.sick .count { color: var(--color-sick); }
 
-        /* ========================================
-           4. 캘린더 그리드
-           ======================================== */
         .calendar-container {
             background: var(--bg-secondary);
             border-radius: 16px;
@@ -250,7 +224,6 @@
             gap: 8px;
         }
 
-        /* 날짜 셀 스타일 */
         .calendar-cell {
             aspect-ratio: 1;
             border-radius: 12px;
@@ -262,10 +235,9 @@
             transition: all 0.2s ease;
             border: 2px solid transparent;
             min-height: 80px;
-            position: relative;
         }
 
-        .calendar-cell:hover {
+        .calendar-cell:hover:not(.empty):not(.weekend) {
             transform: translateY(-2px);
             box-shadow: var(--shadow);
         }
@@ -273,11 +245,6 @@
         .calendar-cell.empty {
             background: transparent;
             cursor: default;
-        }
-
-        .calendar-cell.empty:hover {
-            transform: none;
-            box-shadow: none;
         }
 
         .calendar-cell .date-number {
@@ -298,11 +265,6 @@
 
         .calendar-cell.weekend .date-number {
             color: var(--color-absent);
-        }
-
-        .calendar-cell.weekend:hover {
-            transform: none;
-            box-shadow: none;
         }
 
         /* 상태별 셀 스타일 */
@@ -342,9 +304,6 @@
         }
         .calendar-cell.sick .status-text { color: var(--color-sick); }
 
-        /* ========================================
-           5. 모달 스타일
-           ======================================== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -430,46 +389,23 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
-            transition: background 0.2s ease;
         }
 
-        .modal-close:hover {
-            background: var(--border-color);
-        }
-
-        /* ========================================
-           6. 반응형 디자인
-           ======================================== */
         @media (max-width: 768px) {
             .header-top {
                 flex-direction: column;
                 align-items: flex-start;
             }
-
             .stats-container {
                 width: 100%;
                 justify-content: space-between;
             }
-
-            .period-settings {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .period-display {
-                margin-left: 0;
-                width: 100%;
-                text-align: center;
-            }
-
             .calendar-cell {
                 min-height: 60px;
             }
-
             .calendar-cell .date-number {
                 font-size: 12px;
             }
-
             .calendar-cell .status-text {
                 font-size: 8px;
             }
@@ -477,22 +413,16 @@
     </style>
 </head>
 <body>
-    <!-- ========================================
-         메인 대시보드 컨테이너
-         ======================================== -->
     <div class="dashboard">
-        <!-- 헤더 영역 -->
         <header class="header">
             <div class="header-top">
                 <h1>출석 관리 시스템</h1>
                 <div class="stats-container">
-                    <!-- 현재 출석률 표시 -->
                     <div class="attendance-rate">
                         <div class="rate-value" id="currentRate">100.0%</div>
                         <div class="rate-label">현재 출석률</div>
                         <div class="rate-status success" id="rateStatus">목표 달성</div>
                     </div>
-                    <!-- 목표 출석률 선택기 -->
                     <div class="target-selector">
                         <label for="targetRate">목표 출석률</label>
                         <select id="targetRate">
@@ -506,17 +436,13 @@
                     </div>
                 </div>
             </div>
-            <!-- 기간 설정 영역 -->
             <div class="period-settings">
                 <label for="startDate">출석 시작일:</label>
                 <input type="date" id="startDate">
-                <div class="period-display" id="periodDisplay">
-                    단위기간: -
-                </div>
+                <div class="period-display" id="periodDisplay">단위기간: -</div>
             </div>
         </header>
 
-        <!-- 통계 요약 카드 -->
         <div class="summary-cards">
             <div class="summary-card present">
                 <div class="count" id="presentCount">0</div>
@@ -544,9 +470,7 @@
             </div>
         </div>
 
-        <!-- 캘린더 컨테이너 -->
         <div class="calendar-container">
-            <!-- 요일 헤더 -->
             <div class="calendar-header">
                 <div class="day-name weekend">일</div>
                 <div class="day-name">월</div>
@@ -556,18 +480,15 @@
                 <div class="day-name">금</div>
                 <div class="day-name weekend">토</div>
             </div>
-            <!-- 캘린더 그리드 (JavaScript로 동적 생성) -->
-            <div class="calendar-grid" id="calendarGrid">
-            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </div>
     </div>
 
-    <!-- 상태 변경 모달 -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <h3>출결 상태 변경</h3>
             <div class="modal-date" id="modalDate">2024년 1월 1일</div>
-            <div class="status-options">
+            <div class="status-options" id="statusOptions">
                 <div class="status-option" data-status="present">
                     <div class="status-dot"></div>
                     <span>출석 (Present)</span>
@@ -598,656 +519,390 @@
     </div>
 
     <script>
-        /* ========================================
-           JavaScript - 출석 관리 시스템
-           객체지향적 설계로 캡슐화 및 모듈화
-           ======================================== */
-
         /**
-         * AttendanceStatus - 출결 상태 상수 정의
-         * 모든 가능한 출결 상태를 enum처럼 관리
+         * 출석 관리 시스템 - 완전 재작성 버전
+         * 문제 해결: 클로저, 데이터 누적, 색상 업데이트
          */
-        const AttendanceStatus = {
-            PRESENT: 'present',   // 출석
-            ABSENT: 'absent',     // 결석
-            LATE: 'late',         // 지각
-            EARLY: 'early',       // 조퇴
-            OUTING: 'outing',     // 외출
-            SICK: 'sick'          // 병결
+
+        // ============================================
+        // 상수 정의
+        // ============================================
+        const STATUS = {
+            PRESENT: 'present',
+            ABSENT: 'absent',
+            LATE: 'late',
+            EARLY: 'early',
+            OUTING: 'outing',
+            SICK: 'sick'
         };
 
-        /**
-         * 상태별 한글 라벨 매핑
-         */
-        const StatusLabels = {
-            [AttendanceStatus.PRESENT]: '출석',
-            [AttendanceStatus.ABSENT]: '결석',
-            [AttendanceStatus.LATE]: '지각',
-            [AttendanceStatus.EARLY]: '조퇴',
-            [AttendanceStatus.OUTING]: '외출',
-            [AttendanceStatus.SICK]: '병결'
+        const STATUS_LABELS = {
+            present: '출석',
+            absent: '결석',
+            late: '지각',
+            early: '조퇴',
+            outing: '외출',
+            sick: '병결'
         };
 
-        /**
-         * AttendanceCalculator 클래스
-         * 출석률 계산 로직을 담당하는 핵심 클래스
-         * 모든 계산 규칙이 이 클래스에 캡슐화되어 있음
-         */
-        class AttendanceCalculator {
-            /**
-             * 출석률을 계산하는 메인 메서드
-             * @param {Object} counts - 각 상태별 횟수 객체
-             * @param {number} totalSchoolDays - 총 수업일수 (평일)
-             * @returns {Object} 계산 결과 {rate, finalAbsences, details}
-             */
-            static calculate(counts, totalSchoolDays) {
-                // 총 수업일수가 0이면 100% 반환
-                if (totalSchoolDays === 0) {
-                    return {
-                        rate: 100.0,
-                        finalAbsences: 0,
-                        details: {
-                            directAbsences: 0,
-                            sameTypePenalty: 0,
-                            mixedTypePenalty: 0
-                        }
-                    };
-                }
-
-                // 1. 직접 결석 횟수
-                const directAbsences = counts[AttendanceStatus.ABSENT] || 0;
-
-                // 2. 동일 사유 중복 규칙 (Same Type Pair)
-                // 지각 2회 = 결석 1회, 조퇴 2회 = 결석 1회, 외출 2회 = 결석 1회
-                const lateCount = counts[AttendanceStatus.LATE] || 0;
-                const earlyCount = counts[AttendanceStatus.EARLY] || 0;
-                const outingCount = counts[AttendanceStatus.OUTING] || 0;
-
-                const latePairs = Math.floor(lateCount / 2);      // 지각 쌍 수
-                const earlyPairs = Math.floor(earlyCount / 2);    // 조퇴 쌍 수
-                const outingPairs = Math.floor(outingCount / 2);  // 외출 쌍 수
-
-                const sameTypePenalty = latePairs + earlyPairs + outingPairs;
-
-                // 3. 상이 사유 중복 규칙 (Mixed Type Triple)
-                // 규칙1 적용 후 남은 횟수들의 합이 3이 되면 결석 1회
-                const lateRemainder = lateCount % 2;      // 지각 나머지
-                const earlyRemainder = earlyCount % 2;    // 조퇴 나머지
-                const outingRemainder = outingCount % 2;  // 외출 나머지
-
-                const totalRemainder = lateRemainder + earlyRemainder + outingRemainder;
-                const mixedTypePenalty = Math.floor(totalRemainder / 3);
-
-                // 4. 최종 결석 수 계산
-                const finalAbsences = directAbsences + sameTypePenalty + mixedTypePenalty;
-
-                // 5. 출석률 계산 (소수점 첫째 자리까지)
-                const attendedDays = totalSchoolDays - finalAbsences;
-                const rate = Math.round((attendedDays / totalSchoolDays) * 1000) / 10;
-
-                return {
-                    rate: Math.max(0, rate), // 음수 방지
-                    finalAbsences,
-                    details: {
-                        directAbsences,
-                        sameTypePenalty,
-                        mixedTypePenalty,
-                        lateRemainder,
-                        earlyRemainder,
-                        outingRemainder
-                    }
-                };
-            }
-
-            /**
-             * 주어진 기간 내의 평일(수업일) 수를 계산
-             * @param {Date} startDate - 시작일
-             * @param {Date} endDate - 종료일
-             * @returns {number} 평일 수
-             */
-            static countWeekdays(startDate, endDate) {
-                let count = 0;
-
-                // 날짜 복사본 생성
-                const current = new Date(startDate.getTime());
-                const endDateStr = DateManager.formatDate(endDate);
-
-                // 문자열 비교로 정확한 루프 종료 보장
-                while (DateManager.formatDate(current) <= endDateStr) {
-                    const dayOfWeek = current.getDay();
-                    // 0: 일요일, 6: 토요일이 아니면 평일
-                    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                        count++;
-                    }
-                    current.setDate(current.getDate() + 1);
-                }
-
-                return count;
-            }
+        // ============================================
+        // 유틸리티 함수
+        // ============================================
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
         }
 
-        /**
-         * DateManager 클래스
-         * 날짜 관련 유틸리티 함수들을 관리
-         */
-        class DateManager {
-            /**
-             * 시작일로부터 1개월 후 종료일 계산
-             * @param {Date} startDate - 시작일
-             * @returns {Date} 종료일
-             */
-            static calculateEndDate(startDate) {
-                const endDate = new Date(startDate);
-                endDate.setMonth(endDate.getMonth() + 1);
-                return endDate;
-            }
-
-            /**
-             * Date 객체를 YYYY-MM-DD 형식 문자열로 변환
-             * @param {Date} date - 날짜 객체
-             * @returns {string} 포맷된 문자열
-             */
-            static formatDate(date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-
-            /**
-             * Date 객체를 한글 형식으로 변환
-             * @param {Date} date - 날짜 객체
-             * @returns {string} 한글 포맷 문자열
-             */
-            static formatDateKorean(date) {
-                const year = date.getFullYear();
-                const month = date.getMonth() + 1;
-                const day = date.getDate();
-                return `${year}년 ${month}월 ${day}일`;
-            }
-
-            /**
-             * 주어진 날짜가 주말인지 확인
-             * @param {Date} date - 날짜 객체
-             * @returns {boolean} 주말 여부
-             */
-            static isWeekend(date) {
-                const day = date.getDay();
-                return day === 0 || day === 6;
-            }
-
-            /**
-             * 문자열을 Date 객체로 파싱
-             * @param {string} dateString - YYYY-MM-DD 형식 문자열
-             * @returns {Date} 날짜 객체
-             */
-            static parseDate(dateString) {
-                const [year, month, day] = dateString.split('-').map(Number);
-                return new Date(year, month - 1, day);
-            }
+        function formatDateKorean(date) {
+            return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
         }
 
-        /**
-         * CalendarRenderer 클래스
-         * 캘린더 UI 렌더링을 담당
-         */
-        class CalendarRenderer {
-            /**
-             * @param {HTMLElement} container - 캘린더를 렌더링할 컨테이너
-             * @param {Function} onDateClick - 날짜 클릭 시 콜백 함수
-             */
-            constructor(container, onDateClick) {
-                this.container = container;
-                this.onDateClick = onDateClick;
-            }
-
-            /**
-             * 캘린더 렌더링
-             * @param {Date} startDate - 시작일
-             * @param {Date} endDate - 종료일
-             * @param {Map} attendanceData - 날짜별 출결 데이터
-             */
-            render(startDate, endDate, attendanceData) {
-                this.container.innerHTML = '';
-
-                // 날짜 복사본 생성 (원본 보호)
-                const start = new Date(startDate.getTime());
-                const end = new Date(endDate.getTime());
-
-                // 시작일의 요일에 맞춰 빈 셀 추가
-                const firstDayOfWeek = start.getDay();
-                for (let i = 0; i < firstDayOfWeek; i++) {
-                    const emptyCell = document.createElement('div');
-                    emptyCell.className = 'calendar-cell empty';
-                    this.container.appendChild(emptyCell);
-                }
-
-                // 날짜 셀 생성
-                const current = new Date(start.getTime());
-
-                // 날짜 문자열 비교를 사용하여 정확한 루프 종료
-                const endDateStr = DateManager.formatDate(end);
-
-                while (DateManager.formatDate(current) <= endDateStr) {
-                    const cell = this.createDateCell(current, attendanceData);
-                    this.container.appendChild(cell);
-                    current.setDate(current.getDate() + 1);
-                }
-            }
-
-            /**
-             * 개별 날짜 셀 생성
-             * @param {Date} date - 날짜
-             * @param {Map} attendanceData - 출결 데이터
-             * @returns {HTMLElement} 생성된 셀 요소
-             */
-            createDateCell(date, attendanceData) {
-                const cell = document.createElement('div');
-
-                // 중요: 클로저 문제를 방지하기 위해 날짜 복사본 생성
-                const cellDate = new Date(date.getTime());
-                const dateKey = DateManager.formatDate(cellDate);
-                const isWeekend = DateManager.isWeekend(cellDate);
-
-                // 주말/평일에 따른 상태 결정
-                let status = AttendanceStatus.PRESENT;
-                if (!isWeekend && attendanceData.has(dateKey)) {
-                    status = attendanceData.get(dateKey);
-                }
-
-                // 셀 클래스 설정
-                cell.className = `calendar-cell ${isWeekend ? 'weekend' : status}`;
-
-                // 날짜 번호
-                const dateNumber = document.createElement('div');
-                dateNumber.className = 'date-number';
-                dateNumber.textContent = cellDate.getDate();
-                cell.appendChild(dateNumber);
-
-                // 상태 텍스트 (평일만)
-                if (!isWeekend) {
-                    const statusText = document.createElement('div');
-                    statusText.className = 'status-text';
-                    statusText.textContent = StatusLabels[status];
-                    cell.appendChild(statusText);
-
-                    // 클릭 이벤트 추가 (복사된 날짜 사용)
-                    cell.addEventListener('click', () => {
-                        this.onDateClick(cellDate, status);
-                    });
-                } else {
-                    // 주말 표시
-                    const statusText = document.createElement('div');
-                    statusText.className = 'status-text';
-                    statusText.textContent = '주말';
-                    cell.appendChild(statusText);
-                }
-
-                return cell;
-            }
+        function parseDate(dateStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            return new Date(y, m - 1, d);
         }
 
-        /**
-         * Modal 클래스
-         * 상태 변경 모달 관리
-         */
-        class Modal {
-            /**
-             * @param {Function} onStatusSelect - 상태 선택 시 콜백
-             */
-            constructor(onStatusSelect) {
-                this.overlay = document.getElementById('modalOverlay');
-                this.dateDisplay = document.getElementById('modalDate');
-                this.closeButton = document.getElementById('modalClose');
-                this.statusOptions = document.querySelectorAll('.status-option');
-                this.onStatusSelect = onStatusSelect;
-                this.currentDate = null;
-
-                this.initEventListeners();
-            }
-
-            /**
-             * 모달 이벤트 리스너 초기화
-             */
-            initEventListeners() {
-                // 오버레이 클릭 시 닫기
-                this.overlay.addEventListener('click', (e) => {
-                    if (e.target === this.overlay) {
-                        this.close();
-                    }
-                });
-
-                // 닫기 버튼
-                this.closeButton.addEventListener('click', () => {
-                    this.close();
-                });
-
-                // 상태 옵션 클릭
-                this.statusOptions.forEach(option => {
-                    option.addEventListener('click', () => {
-                        const status = option.dataset.status;
-                        this.onStatusSelect(this.currentDate, status);
-                        this.close();
-                    });
-                });
-
-                // ESC 키로 닫기
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && this.overlay.classList.contains('active')) {
-                        this.close();
-                    }
-                });
-            }
-
-            /**
-             * 모달 열기
-             * @param {Date} date - 선택된 날짜
-             * @param {string} currentStatus - 현재 상태
-             */
-            open(date, currentStatus) {
-                this.currentDate = date;
-                this.dateDisplay.textContent = DateManager.formatDateKorean(date);
-
-                // 현재 상태 하이라이트
-                this.statusOptions.forEach(option => {
-                    if (option.dataset.status === currentStatus) {
-                        option.classList.add('selected');
-                    } else {
-                        option.classList.remove('selected');
-                    }
-                });
-
-                this.overlay.classList.add('active');
-            }
-
-            /**
-             * 모달 닫기
-             */
-            close() {
-                this.overlay.classList.remove('active');
-                this.currentDate = null;
-            }
+        function isWeekend(date) {
+            const day = date.getDay();
+            return day === 0 || day === 6;
         }
 
-        /**
-         * AttendanceManager 클래스
-         * 전체 출석 관리 시스템을 총괄하는 메인 컨트롤러
-         * 모든 컴포넌트를 조율하고 데이터를 관리
-         */
-        class AttendanceManager {
+        function addMonth(date) {
+            const result = new Date(date);
+            result.setMonth(result.getMonth() + 1);
+            return result;
+        }
+
+        function countWeekdays(start, end) {
+            let count = 0;
+            const current = new Date(start);
+            while (current <= end) {
+                if (!isWeekend(current)) count++;
+                current.setDate(current.getDate() + 1);
+            }
+            return count;
+        }
+
+        // ============================================
+        // 출석률 계산
+        // ============================================
+        function calculateAttendanceRate(data, totalDays) {
+            if (totalDays === 0) return { rate: 100, details: {} };
+
+            // 상태별 카운트
+            const counts = {
+                present: 0,
+                absent: 0,
+                late: 0,
+                early: 0,
+                outing: 0,
+                sick: 0
+            };
+
+            // Map을 순회하며 카운트 (Object.values 사용)
+            Object.values(data).forEach(status => {
+                if (counts.hasOwnProperty(status)) {
+                    counts[status]++;
+                }
+            });
+
+            // 출석률 계산
+            const directAbsent = counts.absent;
+
+            // 동일 사유 중복: 각각 2회 = 결석 1회
+            const latePairs = Math.floor(counts.late / 2);
+            const earlyPairs = Math.floor(counts.early / 2);
+            const outingPairs = Math.floor(counts.outing / 2);
+            const sameTypePenalty = latePairs + earlyPairs + outingPairs;
+
+            // 상이 사유 중복: 나머지 합 3회 = 결석 1회
+            const lateRem = counts.late % 2;
+            const earlyRem = counts.early % 2;
+            const outingRem = counts.outing % 2;
+            const mixedTypePenalty = Math.floor((lateRem + earlyRem + outingRem) / 3);
+
+            // 최종 결석 수
+            const finalAbsent = directAbsent + sameTypePenalty + mixedTypePenalty;
+
+            // 출석률 (병결은 출석으로 인정)
+            const rate = ((totalDays - finalAbsent) / totalDays) * 100;
+
+            return {
+                rate: Math.max(0, Math.round(rate * 10) / 10),
+                counts,
+                finalAbsent
+            };
+        }
+
+        // ============================================
+        // 메인 애플리케이션
+        // ============================================
+        class AttendanceApp {
             constructor() {
-                // 상태 데이터
+                // 데이터: 날짜 문자열(YYYY-MM-DD) -> 상태(present/absent/...)
+                this.data = {};
                 this.startDate = null;
                 this.endDate = null;
-                this.attendanceData = new Map(); // dateKey -> status
                 this.targetRate = 90;
+                this.currentDateKey = null; // 모달에서 선택 중인 날짜
 
-                // DOM 요소 참조
-                this.elements = {
-                    startDateInput: document.getElementById('startDate'),
+                this.initElements();
+                this.initEvents();
+                this.setToday();
+            }
+
+            initElements() {
+                this.els = {
+                    startInput: document.getElementById('startDate'),
                     periodDisplay: document.getElementById('periodDisplay'),
                     currentRate: document.getElementById('currentRate'),
                     rateStatus: document.getElementById('rateStatus'),
-                    targetRateSelect: document.getElementById('targetRate'),
+                    targetSelect: document.getElementById('targetRate'),
                     presentCount: document.getElementById('presentCount'),
                     absentCount: document.getElementById('absentCount'),
                     lateCount: document.getElementById('lateCount'),
                     earlyCount: document.getElementById('earlyCount'),
                     outingCount: document.getElementById('outingCount'),
                     sickCount: document.getElementById('sickCount'),
-                    calendarGrid: document.getElementById('calendarGrid')
+                    calendarGrid: document.getElementById('calendarGrid'),
+                    modalOverlay: document.getElementById('modalOverlay'),
+                    modalDate: document.getElementById('modalDate'),
+                    modalClose: document.getElementById('modalClose'),
+                    statusOptions: document.getElementById('statusOptions')
                 };
-
-                // 컴포넌트 초기화
-                this.calendarRenderer = new CalendarRenderer(
-                    this.elements.calendarGrid,
-                    this.handleDateClick.bind(this)
-                );
-
-                this.modal = new Modal(this.handleStatusChange.bind(this));
-
-                // 이벤트 리스너 설정
-                this.initEventListeners();
-
-                // 초기 날짜 설정 (오늘)
-                this.setInitialDate();
             }
 
-            /**
-             * 이벤트 리스너 초기화
-             */
-            initEventListeners() {
-                // 시작일 변경 이벤트
-                this.elements.startDateInput.addEventListener('change', (e) => {
+            initEvents() {
+                // 시작일 변경
+                this.els.startInput.addEventListener('change', (e) => {
                     if (e.target.value) {
-                        this.setStartDate(DateManager.parseDate(e.target.value));
+                        this.setPeriod(parseDate(e.target.value));
                     }
                 });
 
-                // 목표 출석률 변경 이벤트
-                this.elements.targetRateSelect.addEventListener('change', (e) => {
+                // 목표 출석률 변경
+                this.els.targetSelect.addEventListener('change', (e) => {
                     this.targetRate = parseInt(e.target.value);
-                    this.updateRateStatus();
+                    this.updateUI();
+                });
+
+                // 캘린더 셀 클릭 (이벤트 위임)
+                this.els.calendarGrid.addEventListener('click', (e) => {
+                    const cell = e.target.closest('.calendar-cell');
+                    if (!cell || cell.classList.contains('empty') || cell.classList.contains('weekend')) {
+                        return;
+                    }
+                    const dateKey = cell.dataset.date;
+                    if (dateKey) {
+                        this.openModal(dateKey);
+                    }
+                });
+
+                // 모달 닫기
+                this.els.modalClose.addEventListener('click', () => this.closeModal());
+                this.els.modalOverlay.addEventListener('click', (e) => {
+                    if (e.target === this.els.modalOverlay) {
+                        this.closeModal();
+                    }
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.els.modalOverlay.classList.contains('active')) {
+                        this.closeModal();
+                    }
+                });
+
+                // 상태 선택
+                this.els.statusOptions.addEventListener('click', (e) => {
+                    const option = e.target.closest('.status-option');
+                    if (option && this.currentDateKey) {
+                        const status = option.dataset.status;
+                        this.setStatus(this.currentDateKey, status);
+                        this.closeModal();
+                    }
                 });
             }
 
-            /**
-             * 초기 날짜를 오늘로 설정
-             */
-            setInitialDate() {
+            setToday() {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-
-                this.elements.startDateInput.value = DateManager.formatDate(today);
-                this.setStartDate(today);
+                this.els.startInput.value = formatDate(today);
+                this.setPeriod(today);
             }
 
-            /**
-             * 시작일 설정 및 기간 계산
-             * @param {Date} date - 시작일
-             */
-            setStartDate(date) {
-                this.startDate = new Date(date);
-                this.endDate = DateManager.calculateEndDate(date);
+            setPeriod(start) {
+                this.startDate = new Date(start);
+                this.endDate = addMonth(this.startDate);
 
-                // 기간 표시 업데이트
-                const startStr = DateManager.formatDate(this.startDate);
-                const endStr = DateManager.formatDate(this.endDate);
-                this.elements.periodDisplay.textContent = `단위기간: ${startStr} ~ ${endStr}`;
+                this.els.periodDisplay.textContent =
+                    `단위기간: ${formatDate(this.startDate)} ~ ${formatDate(this.endDate)}`;
 
-                // 출결 데이터 초기화 및 캘린더 렌더링
-                this.initializeAttendanceData();
-                this.render();
+                this.initData();
+                this.renderCalendar();
+                this.updateUI();
             }
 
-            /**
-             * 출결 데이터 초기화
-             * 모든 평일을 기본값(출석)으로 설정
-             */
-            initializeAttendanceData() {
-                this.attendanceData.clear();
-
-                // 날짜 복사본 생성
-                const current = new Date(this.startDate.getTime());
-                const endDateStr = DateManager.formatDate(this.endDate);
-
-                // 문자열 비교로 정확한 루프 종료 보장
-                while (DateManager.formatDate(current) <= endDateStr) {
-                    if (!DateManager.isWeekend(current)) {
-                        const dateKey = DateManager.formatDate(current);
-                        this.attendanceData.set(dateKey, AttendanceStatus.PRESENT);
+            initData() {
+                // 평일만 기본값(출석)으로 초기화
+                this.data = {};
+                const current = new Date(this.startDate);
+                while (current <= this.endDate) {
+                    if (!isWeekend(current)) {
+                        this.data[formatDate(current)] = STATUS.PRESENT;
                     }
                     current.setDate(current.getDate() + 1);
                 }
-
-                console.log(`출결 데이터 초기화 완료: ${this.attendanceData.size}개 평일`);
             }
 
-            /**
-             * 날짜 클릭 핸들러
-             * @param {Date} date - 클릭된 날짜
-             * @param {string} currentStatus - 현재 상태
-             */
-            handleDateClick(date, currentStatus) {
-                this.modal.open(date, currentStatus);
+            setStatus(dateKey, status) {
+                // 상태 설정
+                if (this.data.hasOwnProperty(dateKey)) {
+                    this.data[dateKey] = status;
+
+                    // 해당 셀만 업데이트
+                    const cell = this.els.calendarGrid.querySelector(`[data-date="${dateKey}"]`);
+                    if (cell) {
+                        // 기존 상태 클래스 모두 제거
+                        cell.classList.remove('present', 'absent', 'late', 'early', 'outing', 'sick');
+                        // 새 상태 클래스 추가
+                        cell.classList.add(status);
+
+                        // 텍스트 업데이트
+                        const statusText = cell.querySelector('.status-text');
+                        if (statusText) {
+                            statusText.textContent = STATUS_LABELS[status];
+                        }
+                    }
+
+                    this.updateUI();
+                }
             }
 
-            /**
-             * 상태 변경 핸들러
-             * @param {Date} date - 날짜
-             * @param {string} newStatus - 새로운 상태
-             */
-            handleStatusChange(date, newStatus) {
-                // 날짜 유효성 검사
-                if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
-                    console.error('Invalid date in handleStatusChange:', date);
-                    return;
+            renderCalendar() {
+                this.els.calendarGrid.innerHTML = '';
+
+                // 빈 셀 추가
+                const firstDay = this.startDate.getDay();
+                for (let i = 0; i < firstDay; i++) {
+                    const empty = document.createElement('div');
+                    empty.className = 'calendar-cell empty';
+                    this.els.calendarGrid.appendChild(empty);
                 }
 
-                const dateKey = DateManager.formatDate(date);
-
-                // 디버깅: 상태 변경 로그
-                console.log(`상태 변경: ${dateKey} -> ${newStatus}`);
-                console.log(`변경 전 Map 크기: ${this.attendanceData.size}`);
-
-                // 상태 업데이트
-                this.attendanceData.set(dateKey, newStatus);
-
-                console.log(`변경 후 Map 크기: ${this.attendanceData.size}`);
-
-                // UI 업데이트
-                this.render();
+                // 날짜 셀 생성
+                const current = new Date(this.startDate);
+                while (current <= this.endDate) {
+                    const dateKey = formatDate(current);
+                    const cell = this.createCell(current, dateKey);
+                    this.els.calendarGrid.appendChild(cell);
+                    current.setDate(current.getDate() + 1);
+                }
             }
 
-            /**
-             * 전체 UI 렌더링
-             */
-            render() {
-                // 캘린더 렌더링
-                if (this.startDate && this.endDate) {
-                    this.calendarRenderer.render(
-                        this.startDate,
-                        this.endDate,
-                        this.attendanceData
-                    );
+            createCell(date, dateKey) {
+                const cell = document.createElement('div');
+                const weekend = isWeekend(date);
+
+                if (weekend) {
+                    cell.className = 'calendar-cell weekend';
+                } else {
+                    const status = this.data[dateKey] || STATUS.PRESENT;
+                    cell.className = `calendar-cell ${status}`;
+                    cell.dataset.date = dateKey; // 날짜를 data 속성으로 저장
                 }
 
-                // 통계 계산 및 업데이트
-                this.updateStatistics();
+                // 날짜 번호
+                const num = document.createElement('div');
+                num.className = 'date-number';
+                num.textContent = date.getDate();
+                cell.appendChild(num);
+
+                // 상태 텍스트
+                const text = document.createElement('div');
+                text.className = 'status-text';
+                if (weekend) {
+                    text.textContent = '주말';
+                } else {
+                    const status = this.data[dateKey] || STATUS.PRESENT;
+                    text.textContent = STATUS_LABELS[status];
+                }
+                cell.appendChild(text);
+
+                return cell;
             }
 
-            /**
-             * 통계 계산 및 UI 업데이트
-             */
-            updateStatistics() {
-                // 각 상태별 횟수 집계
-                const counts = {
-                    [AttendanceStatus.PRESENT]: 0,
-                    [AttendanceStatus.ABSENT]: 0,
-                    [AttendanceStatus.LATE]: 0,
-                    [AttendanceStatus.EARLY]: 0,
-                    [AttendanceStatus.OUTING]: 0,
-                    [AttendanceStatus.SICK]: 0
-                };
+            updateUI() {
+                // 통계 계산
+                const totalDays = countWeekdays(this.startDate, this.endDate);
+                const result = calculateAttendanceRate(this.data, totalDays);
 
-                // Map을 순회하며 각 상태별 카운트
-                this.attendanceData.forEach((status, dateKey) => {
-                    if (counts.hasOwnProperty(status)) {
-                        counts[status]++;
+                // 카운트 표시
+                this.els.presentCount.textContent = result.counts.present;
+                this.els.absentCount.textContent = result.counts.absent;
+                this.els.lateCount.textContent = result.counts.late;
+                this.els.earlyCount.textContent = result.counts.early;
+                this.els.outingCount.textContent = result.counts.outing;
+                this.els.sickCount.textContent = result.counts.sick;
+
+                // 출석률 표시
+                this.els.currentRate.textContent = `${result.rate.toFixed(1)}%`;
+
+                // 색상
+                if (result.rate >= 90) {
+                    this.els.currentRate.style.color = 'var(--color-present)';
+                } else if (result.rate >= 80) {
+                    this.els.currentRate.style.color = 'var(--color-outing)';
+                } else {
+                    this.els.currentRate.style.color = 'var(--color-absent)';
+                }
+
+                // 목표 달성 여부
+                if (result.rate >= this.targetRate) {
+                    this.els.rateStatus.textContent = '목표 달성';
+                    this.els.rateStatus.className = 'rate-status success';
+                } else if (result.rate >= this.targetRate - 5) {
+                    this.els.rateStatus.textContent = '목표 근접';
+                    this.els.rateStatus.className = 'rate-status warning';
+                } else {
+                    this.els.rateStatus.textContent = '목표 미달';
+                    this.els.rateStatus.className = 'rate-status danger';
+                }
+            }
+
+            openModal(dateKey) {
+                this.currentDateKey = dateKey;
+                const date = parseDate(dateKey);
+                const status = this.data[dateKey];
+
+                this.els.modalDate.textContent = formatDateKorean(date);
+
+                // 현재 상태 하이라이트
+                document.querySelectorAll('.status-option').forEach(opt => {
+                    if (opt.dataset.status === status) {
+                        opt.classList.add('selected');
                     } else {
-                        console.error(`Unknown status: ${status} for date: ${dateKey}`);
+                        opt.classList.remove('selected');
                     }
                 });
 
-                // 디버깅: 현재 상태 출력
-                console.log('현재 출결 현황:', counts);
-
-                // 요약 카드 업데이트
-                this.elements.presentCount.textContent = counts[AttendanceStatus.PRESENT];
-                this.elements.absentCount.textContent = counts[AttendanceStatus.ABSENT];
-                this.elements.lateCount.textContent = counts[AttendanceStatus.LATE];
-                this.elements.earlyCount.textContent = counts[AttendanceStatus.EARLY];
-                this.elements.outingCount.textContent = counts[AttendanceStatus.OUTING];
-                this.elements.sickCount.textContent = counts[AttendanceStatus.SICK];
-
-                // 총 수업일수 계산
-                const totalSchoolDays = AttendanceCalculator.countWeekdays(
-                    this.startDate,
-                    this.endDate
-                );
-
-                // 출석률 계산
-                const result = AttendanceCalculator.calculate(counts, totalSchoolDays);
-
-                // 출석률 표시 업데이트
-                this.elements.currentRate.textContent = `${result.rate.toFixed(1)}%`;
-
-                // 출석률에 따른 색상 변경
-                if (result.rate >= 90) {
-                    this.elements.currentRate.style.color = 'var(--color-present)';
-                } else if (result.rate >= 80) {
-                    this.elements.currentRate.style.color = 'var(--color-outing)';
-                } else {
-                    this.elements.currentRate.style.color = 'var(--color-absent)';
-                }
-
-                // 목표 대비 상태 업데이트
-                this.currentRate = result.rate;
-                this.updateRateStatus();
+                this.els.modalOverlay.classList.add('active');
             }
 
-            /**
-             * 목표 출석률 대비 상태 업데이트
-             */
-            updateRateStatus() {
-                const rateStatus = this.elements.rateStatus;
-
-                if (this.currentRate >= this.targetRate) {
-                    rateStatus.textContent = '목표 달성';
-                    rateStatus.className = 'rate-status success';
-                } else if (this.currentRate >= this.targetRate - 5) {
-                    rateStatus.textContent = '목표 근접';
-                    rateStatus.className = 'rate-status warning';
-                } else {
-                    rateStatus.textContent = '목표 미달';
-                    rateStatus.className = 'rate-status danger';
-                }
+            closeModal() {
+                this.els.modalOverlay.classList.remove('active');
+                this.currentDateKey = null;
             }
         }
 
-        /* ========================================
-           애플리케이션 초기화
-           ======================================== */
-
-        // DOM 로드 완료 후 앱 초기화
+        // ============================================
+        // 앱 초기화
+        // ============================================
+        let app;
         document.addEventListener('DOMContentLoaded', () => {
-            // 전역 앱 인스턴스 생성
-            window.attendanceApp = new AttendanceManager();
-
-            console.log('출석 관리 시스템이 초기화되었습니다.');
+            app = new AttendanceApp();
+            console.log('출석 관리 시스템 초기화 완료');
         });
-
-        /* ========================================
-           검증: 로직 정확성 확인
-
-           1. 출석률 계산 로직 검증:
-              - 총 수업일수: 평일만 카운트 ✓
-              - 병결: 출석으로 인정 (감점 없음) ✓
-              - 동일 사유 중복: 각각 2회 = 결석 1회 ✓
-              - 상이 사유 중복: 나머지 합 3회 = 결석 1회 ✓
-
-           2. 객체지향 설계 검증:
-              - AttendanceCalculator: 계산 로직 캡슐화 ✓
-              - DateManager: 날짜 유틸리티 캡슐화 ✓
-              - CalendarRenderer: UI 렌더링 캡슐화 ✓
-              - Modal: 모달 관리 캡슐화 ✓
-              - AttendanceManager: 메인 컨트롤러 ✓
-
-           3. 코드 품질 검증:
-              - 각 클래스는 단일 책임 원칙 준수 ✓
-              - 메서드는 명확한 역할 수행 ✓
-              - 주석으로 코드 설명 완비 ✓
-           ======================================== */
     </script>
 </body>
 </html>
