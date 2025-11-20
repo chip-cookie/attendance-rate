@@ -675,6 +675,8 @@
             }
 
             initEvents() {
+                console.log('[initEvents] 이벤트 리스너 등록 시작');
+
                 // 시작일 변경
                 this.els.startInput.addEventListener('change', (e) => {
                     if (e.target.value) {
@@ -690,15 +692,22 @@
 
                 // 캘린더 셀 클릭 (이벤트 위임)
                 this.els.calendarGrid.addEventListener('click', (e) => {
+                    console.log('[클릭 이벤트] 발생:', e.target);
                     const cell = e.target.closest('.calendar-cell');
+                    console.log('[클릭 이벤트] 찾은 셀:', cell);
                     if (!cell || cell.classList.contains('empty') || cell.classList.contains('weekend')) {
+                        console.log('[클릭 이벤트] 무시됨 (빈 셀 또는 주말)');
                         return;
                     }
                     const dateKey = cell.dataset.date;
+                    console.log('[클릭 이벤트] 날짜 키:', dateKey);
                     if (dateKey) {
                         this.openModal(dateKey);
+                    } else {
+                        console.error('[클릭 이벤트] dateKey가 없음!');
                     }
                 });
+                console.log('[initEvents] 캘린더 클릭 리스너 등록 완료');
 
                 // 모달 닫기
                 this.els.modalClose.addEventListener('click', () => this.closeModal());
@@ -881,9 +890,12 @@
             }
 
             openModal(dateKey) {
+                console.log('[openModal] 모달 열기:', dateKey);
                 this.currentDateKey = dateKey;
                 const date = parseDate(dateKey);
                 const status = this.data[dateKey];
+
+                console.log('[openModal] 날짜:', date, '상태:', status);
 
                 this.els.modalDate.textContent = formatDateKorean(date);
 
@@ -897,6 +909,7 @@
                 });
 
                 this.els.modalOverlay.classList.add('active');
+                console.log('[openModal] 모달 표시 완료');
             }
 
             closeModal() {
@@ -910,8 +923,12 @@
         // ============================================
         let app;
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('=== 출석 관리 시스템 초기화 시작 ===');
+            console.log('버전: 2025-11-20 14:00:00');
             app = new AttendanceApp();
-            console.log('출석 관리 시스템 초기화 완료');
+            console.log('=== 출석 관리 시스템 초기화 완료 ===');
+            console.log('app 객체:', app);
+            console.log('초기 데이터:', app.data);
         });
     </script>
 </body>
