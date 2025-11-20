@@ -831,8 +831,11 @@
              */
             createDateCell(date, attendanceData) {
                 const cell = document.createElement('div');
-                const dateKey = DateManager.formatDate(date);
-                const isWeekend = DateManager.isWeekend(date);
+
+                // 중요: 클로저 문제를 방지하기 위해 날짜 복사본 생성
+                const cellDate = new Date(date.getTime());
+                const dateKey = DateManager.formatDate(cellDate);
+                const isWeekend = DateManager.isWeekend(cellDate);
 
                 // 주말/평일에 따른 상태 결정
                 let status = AttendanceStatus.PRESENT;
@@ -846,7 +849,7 @@
                 // 날짜 번호
                 const dateNumber = document.createElement('div');
                 dateNumber.className = 'date-number';
-                dateNumber.textContent = date.getDate();
+                dateNumber.textContent = cellDate.getDate();
                 cell.appendChild(dateNumber);
 
                 // 상태 텍스트 (평일만)
@@ -856,9 +859,9 @@
                     statusText.textContent = StatusLabels[status];
                     cell.appendChild(statusText);
 
-                    // 클릭 이벤트 추가
+                    // 클릭 이벤트 추가 (복사된 날짜 사용)
                     cell.addEventListener('click', () => {
-                        this.onDateClick(date, status);
+                        this.onDateClick(cellDate, status);
                     });
                 } else {
                     // 주말 표시
