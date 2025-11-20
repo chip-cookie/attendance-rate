@@ -707,9 +707,13 @@
              */
             static countWeekdays(startDate, endDate) {
                 let count = 0;
-                const current = new Date(startDate);
 
-                while (current <= endDate) {
+                // 날짜 복사본 생성
+                const current = new Date(startDate.getTime());
+                const endDateStr = DateManager.formatDate(endDate);
+
+                // 문자열 비교로 정확한 루프 종료 보장
+                while (DateManager.formatDate(current) <= endDateStr) {
                     const dayOfWeek = current.getDay();
                     // 0: 일요일, 6: 토요일이 아니면 평일
                     if (dayOfWeek !== 0 && dayOfWeek !== 6) {
@@ -806,8 +810,12 @@
             render(startDate, endDate, attendanceData) {
                 this.container.innerHTML = '';
 
+                // 날짜 복사본 생성 (원본 보호)
+                const start = new Date(startDate.getTime());
+                const end = new Date(endDate.getTime());
+
                 // 시작일의 요일에 맞춰 빈 셀 추가
-                const firstDayOfWeek = startDate.getDay();
+                const firstDayOfWeek = start.getDay();
                 for (let i = 0; i < firstDayOfWeek; i++) {
                     const emptyCell = document.createElement('div');
                     emptyCell.className = 'calendar-cell empty';
@@ -815,8 +823,12 @@
                 }
 
                 // 날짜 셀 생성
-                const current = new Date(startDate);
-                while (current <= endDate) {
+                const current = new Date(start.getTime());
+
+                // 날짜 문자열 비교를 사용하여 정확한 루프 종료
+                const endDateStr = DateManager.formatDate(end);
+
+                while (DateManager.formatDate(current) <= endDateStr) {
                     const cell = this.createDateCell(current, attendanceData);
                     this.container.appendChild(cell);
                     current.setDate(current.getDate() + 1);
@@ -1055,14 +1067,20 @@
             initializeAttendanceData() {
                 this.attendanceData.clear();
 
-                const current = new Date(this.startDate);
-                while (current <= this.endDate) {
+                // 날짜 복사본 생성
+                const current = new Date(this.startDate.getTime());
+                const endDateStr = DateManager.formatDate(this.endDate);
+
+                // 문자열 비교로 정확한 루프 종료 보장
+                while (DateManager.formatDate(current) <= endDateStr) {
                     if (!DateManager.isWeekend(current)) {
                         const dateKey = DateManager.formatDate(current);
                         this.attendanceData.set(dateKey, AttendanceStatus.PRESENT);
                     }
                     current.setDate(current.getDate() + 1);
                 }
+
+                console.log(`출결 데이터 초기화 완료: ${this.attendanceData.size}개 평일`);
             }
 
             /**
@@ -1080,8 +1098,24 @@
              * @param {string} newStatus - 새로운 상태
              */
             handleStatusChange(date, newStatus) {
+                // 날짜 유효성 검사
+                if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+                    console.error('Invalid date in handleStatusChange:', date);
+                    return;
+                }
+
                 const dateKey = DateManager.formatDate(date);
+
+                // 디버깅: 상태 변경 로그
+                console.log(`상태 변경: ${dateKey} -> ${newStatus}`);
+                console.log(`변경 전 Map 크기: ${this.attendanceData.size}`);
+
+                // 상태 업데이트
                 this.attendanceData.set(dateKey, newStatus);
+
+                console.log(`변경 후 Map 크기: ${this.attendanceData.size}`);
+
+                // UI 업데이트
                 this.render();
             }
 
@@ -1116,9 +1150,17 @@
                     [AttendanceStatus.SICK]: 0
                 };
 
-                this.attendanceData.forEach((status) => {
-                    counts[status]++;
+                // Map을 순회하며 각 상태별 카운트
+                this.attendanceData.forEach((status, dateKey) => {
+                    if (counts.hasOwnProperty(status)) {
+                        counts[status]++;
+                    } else {
+                        console.error(`Unknown status: ${status} for date: ${dateKey}`);
+                    }
                 });
+
+                // 디버깅: 현재 상태 출력
+                console.log('현재 출결 현황:', counts);
 
                 // 요약 카드 업데이트
                 this.elements.presentCount.textContent = counts[AttendanceStatus.PRESENT];
