@@ -330,30 +330,31 @@ class AttendanceMainWindow(QMainWindow):
             card_layout.setAlignment(Qt.AlignCenter)
             card_layout.setSpacing(5)
 
-            # 숫자
+            # 숫자 (흰색)
             count_label = QLabel("0")
-            count_label.setFont(QFont("", 18, QFont.Bold))
-            count_label.setStyleSheet(f"color: {AttendanceStatus.COLORS[status]};")
+            count_label.setFont(QFont("", 20, QFont.Bold))
+            count_label.setStyleSheet("color: white;")
             count_label.setAlignment(Qt.AlignCenter)
             self.stat_labels[status] = count_label
 
-            # 라벨
+            # 라벨 (흰색, 볼드)
             name_label = QLabel(status)
-            name_label.setFont(QFont("", 10))
+            name_label.setFont(QFont("", 11, QFont.Bold))
             name_label.setAlignment(Qt.AlignCenter)
+            name_label.setStyleSheet("color: white;")
 
             card_layout.addWidget(count_label)
             card_layout.addWidget(name_label)
             card.setLayout(card_layout)
 
-            # 배경색 + 테두리
+            # 배경색 비비드하게 (60% 불투명도) + 테두리
             card.setStyleSheet(f"""
                 QWidget {{
-                    background-color: {AttendanceStatus.COLORS[status]}20;
+                    background-color: {AttendanceStatus.COLORS[status]};
                     border: 2px solid {AttendanceStatus.COLORS[status]};
                     border-radius: 8px;
-                    padding: 12px;
-                    min-width: 90px;
+                    padding: 15px;
+                    min-width: 95px;
                 }}
             """)
 
