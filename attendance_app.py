@@ -110,6 +110,89 @@ class AttendanceCalculator:
             current = current.addDays(1)
         return count
 
+    @staticmethod
+    def calculate_monthly_summary(all_data, start_date):
+        """
+        과거 월별 출석률 요약 계산
+
+        Args:
+            all_data: 전체 출석 데이터 {날짜_문자열: 상태}
+            start_date: 출석 시작일 (QDate)
+
+        Returns:
+            [{
+                'month': 'YYYY년 M월',
+                'year_month': (year, month),  # 정렬용
+                'rate': 출석률,
+                'counts': 상태별 카운트,
+                'weekdays': 평일 수
+            }, ...]
+        """
+        today = QDate.currentDate()
+
+        # 시작 월과 현재 월 계산
+        start_year = start_date.year()
+        start_month = start_date.month()
+        current_year = today.year()
+        current_month = today.month()
+
+        results = []
+
+        # 시작 월부터 현재 월의 전 달까지 순회
+        year = start_year
+        month = start_month
+
+        while True:
+            # 현재 월이면 중단 (현재 월은 포함하지 않음)
+            if year == current_year and month == current_month:
+                break
+
+            # 현재 월을 초과하면 중단
+            if year > current_year or (year == current_year and month > current_month):
+                break
+
+            # 해당 월의 데이터 필터링
+            month_data = {}
+            month_start = QDate(year, month, 1)
+            month_end = QDate(year, month, month_start.daysInMonth())
+
+            # 해당 월의 평일 수 계산
+            total_weekdays = AttendanceCalculator.count_weekdays(month_start, month_end)
+
+            # 해당 월의 출석 데이터 필터링
+            current_date = month_start
+            while current_date <= month_end:
+                date_str = current_date.toString("yyyy-MM-dd")
+                if date_str in all_data and current_date.dayOfWeek() in [1, 2, 3, 4, 5]:
+                    month_data[date_str] = all_data[date_str]
+                current_date = current_date.addDays(1)
+
+            # 출석률 계산 (데이터가 없으면 100%)
+            if len(month_data) == 0:
+                result = {
+                    'rate': 100.0,
+                    'counts': {status: 0 for status in AttendanceStatus.ALL},
+                    'final_absences': 0
+                }
+            else:
+                result = AttendanceCalculator.calculate(month_data, total_weekdays)
+
+            results.append({
+                'month': f'{year}년 {month}월',
+                'year_month': (year, month),
+                'rate': result['rate'],
+                'counts': result['counts'],
+                'weekdays': total_weekdays
+            })
+
+            # 다음 월로 이동
+            month += 1
+            if month > 12:
+                month = 1
+                year += 1
+
+        return results
+
 
 # ============================================
 # 상태 선택 다이얼로그
@@ -234,6 +317,10 @@ class AttendanceMainWindow(QMainWindow):
         # === 통계 카드 ===
         stats = self.create_stats_cards()
         main_layout.addWidget(stats)
+
+        # === 월별 요약 ===
+        monthly_summary = self.create_monthly_summary()
+        main_layout.addWidget(monthly_summary)
 
         # === 캘린더 ===
         calendar = self.create_calendar()
@@ -363,6 +450,28 @@ class AttendanceMainWindow(QMainWindow):
         group.setLayout(layout)
         return group
 
+    def create_monthly_summary(self):
+        """월별 출석률 요약 생성"""
+        self.monthly_group = QGroupBox("📆 월별 출석률 요약 (과거)")
+        layout = QVBoxLayout()
+
+        # 요약 테이블을 담을 컨테이너
+        self.monthly_container = QWidget()
+        self.monthly_layout = QGridLayout()
+        self.monthly_layout.setSpacing(8)
+        self.monthly_container.setLayout(self.monthly_layout)
+
+        layout.addWidget(self.monthly_container)
+
+        # 안내 메시지
+        info = QLabel("💡 완전히 지나간 과거 달의 출석률만 표시됩니다 (현재 월 제외)")
+        info.setFont(QFont("", 9))
+        info.setStyleSheet("color: #64748b; padding: 5px;")
+        layout.addWidget(info)
+
+        self.monthly_group.setLayout(layout)
+        return self.monthly_group
+
     def create_calendar(self):
         """캘린더 생성"""
         group = QGroupBox("📅 출석 캘린더")
@@ -468,8 +577,103 @@ class AttendanceMainWindow(QMainWindow):
         for status, label in self.stat_labels.items():
             label.setText(str(counts.get(status, 0)))
 
+        # 월별 요약 업데이트
+        self.update_monthly_summary()
+
         # 캘린더 하이라이트
         self.highlight_calendar_dates()
+
+    def update_monthly_summary(self):
+        """월별 출석률 요약 업데이트"""
+        # 기존 위젯 제거
+        while self.monthly_layout.count():
+            item = self.monthly_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        # 월별 요약 데이터 계산
+        monthly_data = AttendanceCalculator.calculate_monthly_summary(
+            self.attendance_data,
+            self.start_date
+        )
+
+        # 데이터가 없으면 안내 메시지 표시
+        if len(monthly_data) == 0:
+            no_data_label = QLabel("📭 표시할 과거 월 데이터가 없습니다")
+            no_data_label.setFont(QFont("", 11))
+            no_data_label.setStyleSheet("color: #94a3b8; padding: 20px;")
+            no_data_label.setAlignment(Qt.AlignCenter)
+            self.monthly_layout.addWidget(no_data_label, 0, 0, 1, -1)
+            return
+
+        # 각 월별로 카드 생성
+        for i, month_info in enumerate(monthly_data):
+            card = QWidget()
+            card_layout = QVBoxLayout()
+            card_layout.setSpacing(5)
+            card_layout.setAlignment(Qt.AlignCenter)
+
+            # 월 표시
+            month_label = QLabel(month_info['month'])
+            month_label.setFont(QFont("", 12, QFont.Bold))
+            month_label.setAlignment(Qt.AlignCenter)
+            month_label.setStyleSheet("color: #1e293b;")
+
+            # 출석률 표시
+            rate = month_info['rate']
+            rate_label = QLabel(f"{rate:.1f}%")
+            rate_label.setFont(QFont("", 18, QFont.Bold))
+            rate_label.setAlignment(Qt.AlignCenter)
+
+            # 출석률에 따른 색상
+            if rate >= 90:
+                rate_color = "#10b981"
+            elif rate >= 80:
+                rate_color = "#f59e0b"
+            else:
+                rate_color = "#ef4444"
+            rate_label.setStyleSheet(f"color: {rate_color};")
+
+            # 평일 수 표시
+            weekdays_label = QLabel(f"평일: {month_info['weekdays']}일")
+            weekdays_label.setFont(QFont("", 9))
+            weekdays_label.setAlignment(Qt.AlignCenter)
+            weekdays_label.setStyleSheet("color: #64748b;")
+
+            # 결석 수 표시 (counts에서)
+            counts = month_info['counts']
+            absent_count = counts.get(AttendanceStatus.ABSENT, 0)
+            late_count = counts.get(AttendanceStatus.LATE, 0)
+            early_count = counts.get(AttendanceStatus.EARLY, 0)
+
+            details_text = f"결석: {absent_count} | 지각: {late_count} | 조퇴: {early_count}"
+            details_label = QLabel(details_text)
+            details_label.setFont(QFont("", 8))
+            details_label.setAlignment(Qt.AlignCenter)
+            details_label.setStyleSheet("color: #64748b;")
+
+            card_layout.addWidget(month_label)
+            card_layout.addWidget(rate_label)
+            card_layout.addWidget(weekdays_label)
+            card_layout.addWidget(details_label)
+
+            card.setLayout(card_layout)
+
+            # 카드 스타일
+            card.setStyleSheet("""
+                QWidget {
+                    background-color: white;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 8px;
+                    padding: 12px;
+                    min-width: 140px;
+                }
+            """)
+
+            # 그리드에 배치 (한 줄에 최대 5개)
+            row = i // 5
+            col = i % 5
+            self.monthly_layout.addWidget(card, row, col)
 
     def highlight_calendar_dates(self):
         """캘린더에 색상 표시"""
