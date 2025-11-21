@@ -292,7 +292,8 @@ class AttendanceMainWindow(QMainWindow):
         # 데이터: {날짜_문자열: 상태}
         self.attendance_data = {}
         self.start_date = QDate.currentDate()
-        self.end_date = self.start_date.addMonths(1)
+        # 충분히 긴 기간 설정 (1년)
+        self.end_date = self.start_date.addYears(1)
         self.target_rate = 90
 
         self.init_ui()
@@ -540,7 +541,7 @@ class AttendanceMainWindow(QMainWindow):
     def on_start_date_changed(self, qdate):
         """시작일 변경 이벤트"""
         self.start_date = qdate
-        self.end_date = qdate.addMonths(1)
+        self.end_date = qdate.addYears(1)
         self.initialize_data()
         self.update_display()
         self.highlight_calendar_dates()
@@ -552,12 +553,13 @@ class AttendanceMainWindow(QMainWindow):
 
     def update_display(self):
         """화면 업데이트"""
-        # 기간 표시
-        period_text = f"단위기간: {self.start_date.toString('yyyy-MM-dd')} ~ {self.end_date.toString('yyyy-MM-dd')}"
+        # 기간 표시 - 시작일부터 오늘까지
+        today = QDate.currentDate()
+        period_text = f"추적 기간: {self.start_date.toString('yyyy-MM-dd')} ~ {today.toString('yyyy-MM-dd')}"
         self.period_label.setText(period_text)
 
-        # 출석률 계산
-        total_weekdays = AttendanceCalculator.count_weekdays(self.start_date, self.end_date)
+        # 출석률 계산 (시작일부터 오늘까지)
+        total_weekdays = AttendanceCalculator.count_weekdays(self.start_date, today)
         result = AttendanceCalculator.calculate(self.attendance_data, total_weekdays)
 
         # 출석률 표시
