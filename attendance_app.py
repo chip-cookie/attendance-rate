@@ -290,7 +290,15 @@ class AttendanceMainWindow(QMainWindow):
     def create_stats_cards(self):
         """통계 카드 생성"""
         group = QGroupBox("📈 출결 현황")
+        group.setStyleSheet("""
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                padding: 20px;
+            }
+        """)
         layout = QGridLayout()
+        layout.setSpacing(15)
 
         # 각 상태별 카드
         self.stat_labels = {}
@@ -298,28 +306,35 @@ class AttendanceMainWindow(QMainWindow):
             card = QWidget()
             card_layout = QVBoxLayout()
             card_layout.setAlignment(Qt.AlignCenter)
+            card_layout.setSpacing(10)
 
-            # 숫자
+            # 숫자 (크게)
             count_label = QLabel("0")
-            count_label.setFont(QFont("", 20, QFont.Bold))
-            count_label.setStyleSheet(f"color: {AttendanceStatus.COLORS[status]};")
+            count_label.setFont(QFont("", 32, QFont.Bold))
+            count_label.setStyleSheet(f"color: {AttendanceStatus.COLORS[status]}; padding: 5px;")
             count_label.setAlignment(Qt.AlignCenter)
             self.stat_labels[status] = count_label
 
-            # 라벨
+            # 라벨 (크게)
             name_label = QLabel(status)
-            name_label.setFont(QFont("", 10))
+            name_label.setFont(QFont("", 13, QFont.Bold))
             name_label.setAlignment(Qt.AlignCenter)
+            name_label.setStyleSheet("color: #1e293b;")
 
             card_layout.addWidget(count_label)
             card_layout.addWidget(name_label)
             card.setLayout(card_layout)
 
-            # 배경색
+            # 배경색 진하게 + 테두리
             card.setStyleSheet(f"""
-                background-color: {AttendanceStatus.COLORS[status]}15;
-                border-radius: 8px;
-                padding: 10px;
+                QWidget {{
+                    background-color: {AttendanceStatus.COLORS[status]}25;
+                    border: 2px solid {AttendanceStatus.COLORS[status]};
+                    border-radius: 12px;
+                    padding: 20px;
+                    min-width: 120px;
+                    min-height: 100px;
+                }}
             """)
 
             layout.addWidget(card, 0, i)
