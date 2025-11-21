@@ -374,6 +374,9 @@ class AttendanceMainWindow(QMainWindow):
         self.calendar.setGridVisible(True)
         self.calendar.clicked.connect(self.on_date_clicked)
 
+        # 왼쪽 주차 번호 숨기기
+        self.calendar.setVerticalHeaderFormat(QCalendarWidget.NoVerticalHeader)
+
         # 캘린더 스타일
         self.calendar.setStyleSheet("""
             QCalendarWidget QTableView {
