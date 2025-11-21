@@ -297,8 +297,47 @@ class AttendanceMainWindow(QMainWindow):
         self.target_rate = 90
 
         self.init_ui()
+        self.initialize_sample_data()  # 샘플 데이터 생성
         self.initialize_data()
         self.update_display()
+
+    def initialize_sample_data(self):
+        """8월부터 과거 월 샘플 데이터 생성"""
+        import random
+
+        # 2025년 8월부터 현재 월 직전까지 샘플 데이터 생성
+        current_date = QDate.currentDate()
+        start_sample = QDate(2025, 8, 1)
+
+        # 8월부터 시작
+        sample_date = start_sample
+
+        while sample_date.year() < current_date.year() or \
+              (sample_date.year() == current_date.year() and sample_date.month() < current_date.month()):
+
+            # 해당 월의 마지막 날
+            month_end = QDate(sample_date.year(), sample_date.month(),
+                            QDate(sample_date.year(), sample_date.month(), 1).daysInMonth())
+
+            # 해당 월의 평일에 대해 랜덤 데이터 생성
+            current = QDate(sample_date.year(), sample_date.month(), 1)
+            while current <= month_end:
+                if current.dayOfWeek() in [1, 2, 3, 4, 5]:  # 평일
+                    date_str = current.toString("yyyy-MM-dd")
+                    # 90%는 출석, 5%는 지각, 3%는 조퇴, 2%는 결석
+                    rand = random.random()
+                    if rand < 0.90:
+                        self.attendance_data[date_str] = AttendanceStatus.PRESENT
+                    elif rand < 0.95:
+                        self.attendance_data[date_str] = AttendanceStatus.LATE
+                    elif rand < 0.98:
+                        self.attendance_data[date_str] = AttendanceStatus.EARLY
+                    else:
+                        self.attendance_data[date_str] = AttendanceStatus.ABSENT
+                current = current.addDays(1)
+
+            # 다음 월로 이동
+            sample_date = sample_date.addMonths(1)
 
     def init_ui(self):
         """UI 초기화"""
