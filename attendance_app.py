@@ -286,6 +286,7 @@ class AttendanceMainWindow(QMainWindow):
         """UI 초기화"""
         self.setWindowTitle("출석 관리 시스템")
         self.setGeometry(100, 100, 1000, 700)
+        self.setFixedSize(1000, 700)  # 창 크기 고정
 
         # 메인 위젯
         main_widget = QWidget()
