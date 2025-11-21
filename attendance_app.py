@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QCalendarWidget, QComboBox, QGridLayout,
     QGroupBox, QDialog, QRadioButton, QButtonGroup, QMessageBox,
-    QDateEdit
+    QDateEdit, QScrollArea
 )
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QFont, QColor
@@ -288,9 +288,14 @@ class AttendanceMainWindow(QMainWindow):
         self.setGeometry(100, 100, 1500, 800)
         self.setFixedSize(1500, 800)  # 창 크기 고정
 
+        # 스크롤 영역 생성
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
         # 메인 위젯
         main_widget = QWidget()
-        self.setCentralWidget(main_widget)
 
         # 메인 레이아웃
         main_layout = QVBoxLayout()
@@ -313,10 +318,35 @@ class AttendanceMainWindow(QMainWindow):
 
         main_widget.setLayout(main_layout)
 
+        # 스크롤 영역에 메인 위젯 설정
+        scroll.setWidget(main_widget)
+        self.setCentralWidget(scroll)
+
         # 스타일 적용
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #f8fafc;
+            }
+            QScrollArea {
+                border: none;
+                background-color: #f8fafc;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #f1f5f9;
+                width: 12px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #cbd5e1;
+                border-radius: 6px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: #94a3b8;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
             }
             QGroupBox {
                 background-color: white;
