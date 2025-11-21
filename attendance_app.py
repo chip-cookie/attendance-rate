@@ -292,8 +292,8 @@ class AttendanceMainWindow(QMainWindow):
         # 데이터: {날짜_문자열: 상태}
         self.attendance_data = {}
         self.start_date = QDate.currentDate()
-        # 충분히 긴 기간 설정 (1년)
-        self.end_date = self.start_date.addYears(1)
+        # 단위기간: 시작일부터 정확히 1개월
+        self.end_date = self.start_date.addMonths(1)
         self.target_rate = 90
 
         self.init_ui()
@@ -507,19 +507,20 @@ class AttendanceMainWindow(QMainWindow):
         return group
 
     def initialize_data(self):
-        """데이터 초기화 (평일은 모두 출석으로)"""
-        self.attendance_data.clear()
+        """데이터 초기화 (평일은 모두 출석으로, 기존 데이터 유지)"""
         current = self.start_date
 
         while current <= self.end_date:
             # 평일만 (월~금)
             if current.dayOfWeek() in [1, 2, 3, 4, 5]:
                 date_str = current.toString("yyyy-MM-dd")
-                self.attendance_data[date_str] = AttendanceStatus.PRESENT
+                # 기존에 데이터가 없는 경우에만 출석으로 초기화
+                if date_str not in self.attendance_data:
+                    self.attendance_data[date_str] = AttendanceStatus.PRESENT
             current = current.addDays(1)
 
     def on_date_clicked(self, qdate):
-        """날짜 클릭 이벤트"""
+        """날짜 클릭 이벤트 (범위 제한 없음, 과거 데이터 누적)"""
         date_str = qdate.toString("yyyy-MM-dd")
 
         # 평일인지 확인
@@ -527,7 +528,7 @@ class AttendanceMainWindow(QMainWindow):
             QMessageBox.information(self, "주말", "주말은 출결 처리를 할 수 없습니다.")
             return
 
-        # 현재 상태
+        # 현재 상태 (범위 밖 날짜도 클릭 가능)
         current_status = self.attendance_data.get(date_str, AttendanceStatus.PRESENT)
 
         # 다이얼로그 표시
@@ -541,7 +542,7 @@ class AttendanceMainWindow(QMainWindow):
     def on_start_date_changed(self, qdate):
         """시작일 변경 이벤트"""
         self.start_date = qdate
-        self.end_date = qdate.addYears(1)
+        self.end_date = qdate.addMonths(1)
         self.initialize_data()
         self.update_display()
         self.highlight_calendar_dates()
@@ -553,14 +554,23 @@ class AttendanceMainWindow(QMainWindow):
 
     def update_display(self):
         """화면 업데이트"""
-        # 기간 표시 - 시작일부터 오늘까지
-        today = QDate.currentDate()
-        period_text = f"추적 기간: {self.start_date.toString('yyyy-MM-dd')} ~ {today.toString('yyyy-MM-dd')}"
+        # 단위기간 표시 (시작일 ~ 시작일+1개월)
+        period_text = f"단위기간: {self.start_date.toString('yyyy-MM-dd')} ~ {self.end_date.toString('yyyy-MM-dd')}"
         self.period_label.setText(period_text)
 
-        # 출석률 계산 (시작일부터 오늘까지)
-        total_weekdays = AttendanceCalculator.count_weekdays(self.start_date, today)
-        result = AttendanceCalculator.calculate(self.attendance_data, total_weekdays)
+        # 출석률 계산 (단위기간 내에서만)
+        total_weekdays = AttendanceCalculator.count_weekdays(self.start_date, self.end_date)
+
+        # 단위기간 내의 데이터만 필터링
+        period_data = {}
+        current = self.start_date
+        while current <= self.end_date:
+            date_str = current.toString("yyyy-MM-dd")
+            if date_str in self.attendance_data:
+                period_data[date_str] = self.attendance_data[date_str]
+            current = current.addDays(1)
+
+        result = AttendanceCalculator.calculate(period_data, total_weekdays)
 
         # 출석률 표시
         rate = result['rate']
