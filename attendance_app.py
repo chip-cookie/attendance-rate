@@ -137,18 +137,18 @@ class StatusDialog(QDialog):
 
         # 날짜 표시
         date_label = QLabel(f"📅 {date_str}")
-        date_label.setFont(QFont("", 16, QFont.Bold))
+        date_label.setFont(QFont("", 13, QFont.Bold))
         date_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(date_label)
 
-        layout.addSpacing(15)
+        layout.addSpacing(12)
 
         # 라디오 버튼 그룹
         self.button_group = QButtonGroup()
 
         for i, status in enumerate(AttendanceStatus.ALL):
             radio = QRadioButton(status)
-            radio.setFont(QFont("", 14))
+            radio.setFont(QFont("", 12))
             if status == current_status:
                 radio.setChecked(True)
 
@@ -156,17 +156,17 @@ class StatusDialog(QDialog):
             color = AttendanceStatus.COLORS[status]
             radio.setStyleSheet(f"""
                 QRadioButton {{
-                    padding: 12px;
-                    margin: 3px;
+                    padding: 10px;
+                    margin: 2px;
                 }}
                 QRadioButton::indicator {{
-                    width: 20px;
-                    height: 20px;
+                    width: 18px;
+                    height: 18px;
                 }}
                 QRadioButton:checked {{
                     background-color: {color}22;
-                    border-left: 4px solid {color};
-                    border-radius: 5px;
+                    border-left: 3px solid {color};
+                    border-radius: 4px;
                 }}
             """)
 
@@ -174,17 +174,17 @@ class StatusDialog(QDialog):
             radio.toggled.connect(lambda checked, s=status: self.on_status_changed(s, checked))
             layout.addWidget(radio)
 
-        layout.addSpacing(15)
+        layout.addSpacing(12)
 
         # 확인 버튼
         ok_button = QPushButton("확인")
-        ok_button.setFont(QFont("", 14))
+        ok_button.setFont(QFont("", 12))
         ok_button.clicked.connect(self.accept)
         ok_button.setStyleSheet("""
             QPushButton {
                 background-color: #10b981;
                 color: white;
-                padding: 15px;
+                padding: 12px;
                 border-radius: 5px;
                 font-weight: bold;
             }
@@ -285,8 +285,8 @@ class AttendanceMainWindow(QMainWindow):
     def init_ui(self):
         """UI 초기화"""
         self.setWindowTitle("출석 관리 시스템")
-        self.setGeometry(100, 100, 1500, 1000)
-        self.setFixedSize(1500, 1000)  # 창 크기 고정
+        self.setGeometry(100, 100, 1500, 800)
+        self.setFixedSize(1500, 800)  # 창 크기 고정
 
         # 메인 위젯
         main_widget = QWidget()
@@ -320,11 +320,11 @@ class AttendanceMainWindow(QMainWindow):
             }
             QGroupBox {
                 background-color: white;
-                border-radius: 12px;
-                padding: 20px;
-                margin: 8px;
+                border-radius: 10px;
+                padding: 12px;
+                margin: 5px;
                 font-weight: bold;
-                font-size: 15px;
+                font-size: 13px;
             }
             QLabel {
                 color: #1e293b;
@@ -344,11 +344,11 @@ class AttendanceMainWindow(QMainWindow):
         self.start_date_edit = QDateEdit()
         self.start_date_edit.setDate(QDate.currentDate())
         self.start_date_edit.setCalendarPopup(True)
-        self.start_date_edit.setFont(QFont("", 14))
+        self.start_date_edit.setFont(QFont("", 12))
         self.start_date_edit.dateChanged.connect(self.on_start_date_changed)
         self.start_date_edit.setStyleSheet("""
             QDateEdit {
-                padding: 8px;
+                padding: 6px;
                 border: 2px solid #10b981;
                 border-radius: 5px;
             }
@@ -357,7 +357,7 @@ class AttendanceMainWindow(QMainWindow):
 
         # 기간 표시
         self.period_label = QLabel()
-        self.period_label.setFont(QFont("", 14))
+        self.period_label.setFont(QFont("", 12))
         first_row.addWidget(self.period_label)
 
         first_row.addStretch()
@@ -369,7 +369,7 @@ class AttendanceMainWindow(QMainWindow):
         # 현재 출석률
         second_row.addWidget(QLabel("현재 출석률:"))
         self.rate_label = QLabel("100.0%")
-        self.rate_label.setFont(QFont("", 36, QFont.Bold))
+        self.rate_label.setFont(QFont("", 28, QFont.Bold))
         self.rate_label.setStyleSheet("color: #10b981;")
         second_row.addWidget(self.rate_label)
 
@@ -377,13 +377,13 @@ class AttendanceMainWindow(QMainWindow):
 
         # 월별 출석률 저장 버튼
         save_button = QPushButton("💾 현재 달 저장")
-        save_button.setFont(QFont("", 14, QFont.Bold))
+        save_button.setFont(QFont("", 12, QFont.Bold))
         save_button.clicked.connect(self.save_current_month)
         save_button.setStyleSheet("""
             QPushButton {
                 background-color: #3b82f6;
                 color: white;
-                padding: 12px 24px;
+                padding: 10px 20px;
                 border-radius: 5px;
                 border: none;
             }
@@ -404,7 +404,7 @@ class AttendanceMainWindow(QMainWindow):
         self.target_combo.addItems(["100%", "95%", "90%", "85%", "80%", "75%"])
         self.target_combo.setCurrentText("90%")
         self.target_combo.currentTextChanged.connect(self.on_target_changed)
-        self.target_combo.setFont(QFont("", 14))
+        self.target_combo.setFont(QFont("", 12))
         second_row.addWidget(self.target_combo)
 
         layout.addLayout(second_row)
@@ -416,7 +416,7 @@ class AttendanceMainWindow(QMainWindow):
         """통계 카드 생성"""
         group = QGroupBox("📈 출결 현황")
         layout = QGridLayout()
-        layout.setSpacing(12)
+        layout.setSpacing(10)
 
         # 각 상태별 카드
         self.stat_labels = {}
@@ -424,18 +424,18 @@ class AttendanceMainWindow(QMainWindow):
             card = QWidget()
             card_layout = QVBoxLayout()
             card_layout.setAlignment(Qt.AlignCenter)
-            card_layout.setSpacing(5)
+            card_layout.setSpacing(4)
 
             # 숫자 (흰색)
             count_label = QLabel("0")
-            count_label.setFont(QFont("", 32, QFont.Bold))
+            count_label.setFont(QFont("", 24, QFont.Bold))
             count_label.setStyleSheet("color: white;")
             count_label.setAlignment(Qt.AlignCenter)
             self.stat_labels[status] = count_label
 
             # 라벨 (흰색, 볼드)
             name_label = QLabel(status)
-            name_label.setFont(QFont("", 16, QFont.Bold))
+            name_label.setFont(QFont("", 13, QFont.Bold))
             name_label.setAlignment(Qt.AlignCenter)
             name_label.setStyleSheet("color: white;")
 
@@ -448,8 +448,8 @@ class AttendanceMainWindow(QMainWindow):
                 QWidget {{
                     background-color: {AttendanceStatus.COLORS[status]};
                     border: 2px solid {AttendanceStatus.COLORS[status]};
-                    border-radius: 10px;
-                    padding: 25px;
+                    border-radius: 8px;
+                    padding: 18px;
                     min-width: 150px;
                 }}
             """)
@@ -467,15 +467,15 @@ class AttendanceMainWindow(QMainWindow):
         # 요약 테이블을 담을 컨테이너
         self.monthly_container = QWidget()
         self.monthly_layout = QGridLayout()
-        self.monthly_layout.setSpacing(12)
+        self.monthly_layout.setSpacing(10)
         self.monthly_container.setLayout(self.monthly_layout)
 
         layout.addWidget(self.monthly_container)
 
         # 안내 메시지
         info = QLabel("💡 '💾 현재 달 저장' 버튼으로 저장한 월별 출석률 기록입니다")
-        info.setFont(QFont("", 12))
-        info.setStyleSheet("color: #64748b; padding: 8px;")
+        info.setFont(QFont("", 10))
+        info.setStyleSheet("color: #64748b; padding: 5px;")
         layout.addWidget(info)
 
         self.monthly_group.setLayout(layout)
@@ -488,7 +488,7 @@ class AttendanceMainWindow(QMainWindow):
 
         # 캘린더 위젯
         self.calendar = QCalendarWidget()
-        self.calendar.setFont(QFont("", 13))
+        self.calendar.setFont(QFont("", 11))
         self.calendar.setGridVisible(True)
         self.calendar.clicked.connect(self.on_date_clicked)
 
@@ -506,8 +506,8 @@ class AttendanceMainWindow(QMainWindow):
 
         # 설명
         info = QLabel("💡 평일 날짜를 클릭하여 출결 상태를 변경하세요")
-        info.setFont(QFont("", 12))
-        info.setStyleSheet("color: #64748b; padding: 8px;")
+        info.setFont(QFont("", 10))
+        info.setStyleSheet("color: #64748b; padding: 5px;")
         layout.addWidget(info)
 
         group.setLayout(layout)
@@ -644,8 +644,8 @@ class AttendanceMainWindow(QMainWindow):
         # 저장된 기록이 없으면 안내 메시지 표시
         if len(self.saved_monthly_records) == 0:
             no_data_label = QLabel("📭 저장된 월별 출석률이 없습니다\n'💾 현재 달 저장' 버튼을 눌러 출석률을 기록하세요")
-            no_data_label.setFont(QFont("", 14))
-            no_data_label.setStyleSheet("color: #94a3b8; padding: 30px;")
+            no_data_label.setFont(QFont("", 12))
+            no_data_label.setStyleSheet("color: #94a3b8; padding: 20px;")
             no_data_label.setAlignment(Qt.AlignCenter)
             self.monthly_layout.addWidget(no_data_label, 0, 0, 1, -1)
             return
@@ -662,14 +662,14 @@ class AttendanceMainWindow(QMainWindow):
 
             # 월 표시
             month_label = QLabel(month_info['month'])
-            month_label.setFont(QFont("", 16, QFont.Bold))
+            month_label.setFont(QFont("", 13, QFont.Bold))
             month_label.setAlignment(Qt.AlignCenter)
             month_label.setStyleSheet("color: #1e293b;")
 
             # 출석률 표시
             rate = month_info['rate']
             rate_label = QLabel(f"{rate:.1f}%")
-            rate_label.setFont(QFont("", 26, QFont.Bold))
+            rate_label.setFont(QFont("", 20, QFont.Bold))
             rate_label.setAlignment(Qt.AlignCenter)
 
             # 출석률에 따른 색상
@@ -678,7 +678,7 @@ class AttendanceMainWindow(QMainWindow):
 
             # 평일 수 표시
             weekdays_label = QLabel(f"평일: {month_info['weekdays']}일")
-            weekdays_label.setFont(QFont("", 12))
+            weekdays_label.setFont(QFont("", 10))
             weekdays_label.setAlignment(Qt.AlignCenter)
             weekdays_label.setStyleSheet("color: #64748b;")
 
@@ -690,7 +690,7 @@ class AttendanceMainWindow(QMainWindow):
 
             details_text = f"결석: {absent_count} | 지각: {late_count} | 조퇴: {early_count}"
             details_label = QLabel(details_text)
-            details_label.setFont(QFont("", 11))
+            details_label.setFont(QFont("", 9))
             details_label.setAlignment(Qt.AlignCenter)
             details_label.setStyleSheet("color: #64748b;")
 
@@ -706,9 +706,9 @@ class AttendanceMainWindow(QMainWindow):
                 QWidget {
                     background-color: white;
                     border: 2px solid #e2e8f0;
-                    border-radius: 10px;
-                    padding: 20px;
-                    min-width: 210px;
+                    border-radius: 8px;
+                    padding: 15px;
+                    min-width: 180px;
                 }
             """)
 
@@ -739,7 +739,7 @@ def main():
     app = QApplication(sys.argv)
 
     # 한글 폰트 설정
-    app.setFont(QFont("맑은 고딕", 13))
+    app.setFont(QFont("맑은 고딕", 11))
 
     window = AttendanceMainWindow()
     window.show()
