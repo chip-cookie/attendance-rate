@@ -291,6 +291,8 @@ class AttendanceMainWindow(QMainWindow):
 
         # 데이터: {날짜_문자열: 상태}
         self.attendance_data = {}
+        # 저장된 월별 출석률 기록: {(year, month): {'rate': ..., 'counts': ..., 'weekdays': ...}}
+        self.saved_monthly_records = {}
         self.start_date = QDate.currentDate()
         # 단위기간: 시작일부터 정확히 1개월
         self.end_date = self.start_date.addMonths(1)
@@ -302,7 +304,7 @@ class AttendanceMainWindow(QMainWindow):
         self.update_display()
 
     def initialize_sample_data(self):
-        """8월부터 과거 월 샘플 데이터 생성"""
+        """8월부터 과거 월 샘플 데이터 생성 및 저장"""
         import random
 
         # 2025년 8월부터 현재 월 직전까지 샘플 데이터 생성
@@ -315,26 +317,43 @@ class AttendanceMainWindow(QMainWindow):
         while sample_date.year() < current_date.year() or \
               (sample_date.year() == current_date.year() and sample_date.month() < current_date.month()):
 
-            # 해당 월의 마지막 날
-            month_end = QDate(sample_date.year(), sample_date.month(),
-                            QDate(sample_date.year(), sample_date.month(), 1).daysInMonth())
+            year = sample_date.year()
+            month = sample_date.month()
+            month_start = QDate(year, month, 1)
+            month_end = QDate(year, month, month_start.daysInMonth())
 
             # 해당 월의 평일에 대해 랜덤 데이터 생성
-            current = QDate(sample_date.year(), sample_date.month(), 1)
+            current = month_start
+            month_data = {}
             while current <= month_end:
                 if current.dayOfWeek() in [1, 2, 3, 4, 5]:  # 평일
                     date_str = current.toString("yyyy-MM-dd")
                     # 90%는 출석, 5%는 지각, 3%는 조퇴, 2%는 결석
                     rand = random.random()
                     if rand < 0.90:
-                        self.attendance_data[date_str] = AttendanceStatus.PRESENT
+                        status = AttendanceStatus.PRESENT
                     elif rand < 0.95:
-                        self.attendance_data[date_str] = AttendanceStatus.LATE
+                        status = AttendanceStatus.LATE
                     elif rand < 0.98:
-                        self.attendance_data[date_str] = AttendanceStatus.EARLY
+                        status = AttendanceStatus.EARLY
                     else:
-                        self.attendance_data[date_str] = AttendanceStatus.ABSENT
+                        status = AttendanceStatus.ABSENT
+
+                    self.attendance_data[date_str] = status
+                    month_data[date_str] = status
                 current = current.addDays(1)
+
+            # 해당 월의 출석률 계산 및 저장
+            total_weekdays = AttendanceCalculator.count_weekdays(month_start, month_end)
+            result = AttendanceCalculator.calculate(month_data, total_weekdays)
+
+            self.saved_monthly_records[(year, month)] = {
+                'month': f'{year}년 {month}월',
+                'rate': result['rate'],
+                'counts': result['counts'],
+                'weekdays': total_weekdays,
+                'saved_date': month_end.toString("yyyy-MM-dd")
+            }
 
             # 다음 월로 이동
             sample_date = sample_date.addMonths(1)
@@ -430,6 +449,29 @@ class AttendanceMainWindow(QMainWindow):
 
         second_row.addStretch()
 
+        # 월별 출석률 저장 버튼
+        save_button = QPushButton("💾 현재 달 저장")
+        save_button.setFont(QFont("", 11, QFont.Bold))
+        save_button.clicked.connect(self.save_current_month)
+        save_button.setStyleSheet("""
+            QPushButton {
+                background-color: #3b82f6;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 5px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #2563eb;
+            }
+            QPushButton:pressed {
+                background-color: #1d4ed8;
+            }
+        """)
+        second_row.addWidget(save_button)
+
+        second_row.addSpacing(20)
+
         # 목표 출석률 선택
         second_row.addWidget(QLabel("목표:"))
         self.target_combo = QComboBox()
@@ -505,7 +547,7 @@ class AttendanceMainWindow(QMainWindow):
         layout.addWidget(self.monthly_container)
 
         # 안내 메시지
-        info = QLabel("💡 과거 달과 현재 진행 중인 달의 출석률을 표시합니다")
+        info = QLabel("💡 '💾 현재 달 저장' 버튼으로 저장한 월별 출석률 기록입니다")
         info.setFont(QFont("", 9))
         info.setStyleSheet("color: #64748b; padding: 5px;")
         layout.addWidget(info)
@@ -591,6 +633,45 @@ class AttendanceMainWindow(QMainWindow):
         self.target_rate = int(text.replace("%", ""))
         self.update_display()
 
+    def save_current_month(self):
+        """현재 단위기간의 출석률을 월별 기록으로 저장"""
+        # 단위기간 내의 데이터만 필터링
+        period_data = {}
+        current = self.start_date
+        while current <= self.end_date:
+            date_str = current.toString("yyyy-MM-dd")
+            if date_str in self.attendance_data:
+                period_data[date_str] = self.attendance_data[date_str]
+            current = current.addDays(1)
+
+        # 출석률 계산
+        total_weekdays = AttendanceCalculator.count_weekdays(self.start_date, self.end_date)
+        result = AttendanceCalculator.calculate(period_data, total_weekdays)
+
+        # 어느 월로 저장할지 결정 (시작일의 월로 저장)
+        year = self.start_date.year()
+        month = self.start_date.month()
+        month_key = (year, month)
+
+        # 저장
+        self.saved_monthly_records[month_key] = {
+            'month': f'{year}년 {month}월',
+            'rate': result['rate'],
+            'counts': result['counts'],
+            'weekdays': total_weekdays,
+            'saved_date': QDate.currentDate().toString("yyyy-MM-dd")
+        }
+
+        # 화면 업데이트
+        self.update_monthly_summary()
+
+        # 저장 완료 메시지
+        QMessageBox.information(
+            self,
+            "저장 완료",
+            f"{year}년 {month}월 출석률 {result['rate']:.1f}%가 저장되었습니다."
+        )
+
     def update_display(self):
         """화면 업데이트"""
         # 단위기간 표시 (시작일 ~ 시작일+1개월)
@@ -636,31 +717,28 @@ class AttendanceMainWindow(QMainWindow):
         self.highlight_calendar_dates()
 
     def update_monthly_summary(self):
-        """월별 출석률 요약 업데이트"""
+        """월별 출석률 요약 업데이트 (저장된 기록만 표시)"""
         # 기존 위젯 제거
         while self.monthly_layout.count():
             item = self.monthly_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
 
-        # 월별 요약 데이터 계산
-        monthly_data = AttendanceCalculator.calculate_monthly_summary(
-            self.attendance_data,
-            self.start_date
-        )
-
-        # 데이터가 없으면 안내 메시지 표시
-        if len(monthly_data) == 0:
-            no_data_label = QLabel("📭 표시할 과거 월 데이터가 없습니다")
+        # 저장된 기록이 없으면 안내 메시지 표시
+        if len(self.saved_monthly_records) == 0:
+            no_data_label = QLabel("📭 저장된 월별 출석률이 없습니다\n'💾 현재 달 저장' 버튼을 눌러 출석률을 기록하세요")
             no_data_label.setFont(QFont("", 11))
             no_data_label.setStyleSheet("color: #94a3b8; padding: 20px;")
             no_data_label.setAlignment(Qt.AlignCenter)
             self.monthly_layout.addWidget(no_data_label, 0, 0, 1, -1)
             return
 
+        # 저장된 기록을 날짜순으로 정렬
+        sorted_records = sorted(self.saved_monthly_records.items(), key=lambda x: x[0])
+
         # 각 월별로 카드 생성
-        for i, month_info in enumerate(monthly_data):
-            is_current = month_info.get('is_current', False)
+        for i, (month_key, month_info) in enumerate(sorted_records):
+            is_current = False  # 저장된 기록은 과거 기록
 
             card = QWidget()
             card_layout = QVBoxLayout()
